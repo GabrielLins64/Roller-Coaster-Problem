@@ -4,33 +4,35 @@ import sys
 import time
 import random
 
-RUNNING = True
+EXECUTANDO = True
 
 fila = []
 carros = []
 passageiros = []
 
+
 def signal_handler(signal, frame):
-    global RUNNING
+    global EXECUTANDO
     global fila
     global carros
     global passageiros
 
-    try:
-        for i in range(len(fila)):
-            del fila[i]
-        for i in range(len(carros)):
-            del carros[i]
-        for i in range(len(passageiros)):
-            del passageiros[i]
-    except Exception:
-        pass
+    print("Limpando a memória para sair...")
+    EXECUTANDO = False
+    time.sleep(0.5)
 
-    print("\nCleaned! Exiting")
-    RUNNING = False
+    try:
+        del fila[:]
+        del carros[:]
+        del passageiros[:]
+    except Exception as err:
+        print("Problema na limpeza:", err)
+
+    print("\nMemória limpa! Saindo.")
+
 
 signal.signal(signal.SIGINT, signal_handler)
-forever = threading.Event()
+
 
 class Passageiro:
     """Classe do Passageiro da Montanha Russa
@@ -64,7 +66,7 @@ class Passageiro:
 
         fila.pop(0)
         time.sleep(self.Te)
-        
+
         print(f"Passageiro {self.ticket} embarcou!")
         return self
 
@@ -99,23 +101,23 @@ class Carro:
 
     def aguardar_passageiros(self):
         global fila
-        global RUNNING
-        if (not RUNNING):
+        global EXECUTANDO
+        if (not EXECUTANDO):
             return
 
         print(f"Carro {self.id} aguardando passageiros.")
 
         # Aguardando até o carro estar cheio
-        while (len(self.passageiros) < self.C and RUNNING):
+        while (len(self.passageiros) < self.C and EXECUTANDO):
             if (len(fila) > 0):
                 passageiro = fila[0].embarcar()
                 self.passageiros.append(passageiro)
-        
+
         self.cheio = True
 
     def iniciar_passeio(self):
-        global RUNNING
-        if (not RUNNING):
+        global EXECUTANDO
+        if (not EXECUTANDO):
             return
 
         print(f"Carro {self.id} iniciando passeio.")
@@ -123,9 +125,11 @@ class Carro:
         print(f"Carro {self.id} terminou o passeio!")
 
         for passageiro in self.passageiros:
+            if (not EXECUTANDO):
+                return
             passageiro.desembarcar()
             del passageiro
-        
+
         self.passageiros = []
         self.cheio = False
 
@@ -176,16 +180,19 @@ class MontanhaRussa:
     def abrir_fila(self):
         """Função de Thread que insere passageiros na fila global."""
         global passageiros
+        global EXECUTANDO
         print(f"A fila foi aberta!")
 
         for passageiro in passageiros:
+            if (not EXECUTANDO):
+                return
             passageiro.chegar()
 
     def iniciar_carros(self):
         global carros
-        global RUNNING
+        global EXECUTANDO
 
-        while (RUNNING):
+        while (EXECUTANDO):
             for carro in carros:
                 while (carro.cheio):
                     time.sleep(0.1)
