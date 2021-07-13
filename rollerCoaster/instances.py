@@ -100,6 +100,7 @@ class Carro:
         self.cheio = False
 
     def aguardar_passageiros(self):
+        """Espera ocupada até embarcar todos os C passageiros"""
         global fila
         global EXECUTANDO
         if (not EXECUTANDO):
@@ -116,6 +117,10 @@ class Carro:
         self.cheio = True
 
     def iniciar_passeio(self):
+        """Inicia o passeio da instância de Thread do Carro
+
+        Suspende a Thread do carro por Tm segundos (passeio) e, em seguida, desembarca todos os seus passageiros
+        """
         global EXECUTANDO
         if (not EXECUTANDO):
             return
@@ -189,6 +194,7 @@ class MontanhaRussa:
             passageiro.chegar()
 
     def iniciar_carros(self):
+        """Thread que inicia os carros e suas Threads"""
         global carros
         global EXECUTANDO
 
@@ -201,6 +207,7 @@ class MontanhaRussa:
                 thread.start()
 
     def comecar(self):
+        """Inicia todas as Threads de Carros e Passageiros"""
         if (not self.inicializado):
             self.inicializar()
 
