@@ -153,29 +153,39 @@ Considere n = 148, m = 3, C = 4,  Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg.
 
 #### Descrição dos algoritmos
 
-Temos parte do código sequencial, e parte do código concorrente, com a utilização de Threads. As partes sequenciais se tratam das quais se faz necessária uma ordem de execução definida, como a chegada de pessoas na fila da montanha russa, ou mesmo o embarque e o desembarque de passageiros do carro. Já as partes concorrentes se referem aos eventos de pessoas chegarem na fila, ao mesmo tempo que carros recebem ou deixam passageiros, bem como outros carros podem estar já em movimento nestes instantes.
+O início do algoritmo consiste na Classe Montanha Russa gerando a quantidade definida de Carros e Passageiros como Threads, cada. A partir daí, ambas as classes (Carros e Passageiros) passam a se autogerenciar, respeitando a ordem de saída dos carros e a ordem da fila, bem como sabendo em que momento um Passageiro deverá embarcar ou desembarcar de um Carro.
 
-Portanto, teremos 2 principais partes concorrentes, sendo uma destas multiplicada pela quantidade de carros, se tratando da corrida dos carros que estão cheios. Visualizando em pseudo-código, podemos ter a seguinte representação deste modelo:
+A abordagem utilizada para o devido funcionamento do modelo foi a de manter duas esperas ocupadas em cada Passageiro, uma para verificar sua posição na fila e só entrar no Carro quando possível, e uma para verificar se o mesmo está parado e vazio. Já para a classe Carro, existe apenas uma espera ocupada, na qual este constantemente verifica se já possui a capacidade máxima de passageiros e, quando possuir, inicia o passeio e sinaliza, utilizando flags globais - *mutexes* (memória compartilhada), representando qual o carro que os próximos passageiros deverão entrar, evitando, assim, condições de corrida e a quebra de ordem.
+
+Como a linguagem *Python* não permite que se "mate" Threads, foi necessária a utilização de um gerenciador (que não foi instanciado como Thread) para constantemente verificar o término do programa e, quando atingido, limpar a memória e gerar os relatórios da execução.
+
+Visualizando em pseudo-código, podemos ter a seguinte representação deste modelo:
 
 ```
 função montanha_russa (parâmetros) {
-  Thread (função carros () {
-    Para cada carro: # Laço sequencial p/ manter a ordem dos carros
-      esperar_esvaziar();
-      esperar_embarque_passageiros();
-      Thread(iniciar_corrida) # Feito como thread, para que o laço avance para o próximo carro na fila enquanto este está em sua corrida
-  });
+  para (carro em carros) {
+    Thread carro;
+    carro.iniciar();
+  }
 
-  Thread (função abrir_fila () {
-    Para cada passageiro: # Chegada sequencial de passageiros na fila
-      entrar_na_fila() # Tempo de chegada aleatório
-  })
+  para (passageiros em passageiros) {
+    Thread passageiro;
+    esperar(passageiro.tempo_de_chegada);
+    global fila.adicionar(passageiro);
+    passageiro.iniciar();
+  }
+
+  enquanto(nao_terminou_execucao) {
+    esperar();
+  }
+
+  gerar_relatorio();
 }
 ```
 
 #### Descrição da implementação
 
-O código consiste em 3 classes principais: [MontanhaRussa](#classe-montanha-russa), [Passageiro](#classe-passageiro) e [Carro](#classe-carro). Para a devida comunicação entre as Threads, são utilizadas variáveis (arrays) de acesso global, isto é, memória compartilhada para armazenar os passageiros inicializados, os passageiros na fila e os carros da montanha russa. Como mecanismo de exclusão mútua, é utilizada a espera bloqueada. Os detalhes de implementação de cada fluxo de funcionamento são descritos abaixo para cada classe.
+O código consiste em 3 classes principais: [MontanhaRussa](#classe-montanha-russa), [Passageiro](#classe-passageiro) e [Carro](#classe-carro). Para a devida comunicação entre as Threads, são utilizadas variáveis de acesso global, isto é, recursos compartilhados para funcionar como *mutexes* e controle de ordem. Como mecanismo de exclusão mútua em cada Thread, além dos *mutexes*, é utilizada a espera bloqueada. Os detalhes de implementação de cada fluxo de funcionamento são descritos abaixo para cada classe.
 
 
 ##### Classe Montanha Russa
@@ -184,10 +194,10 @@ A classe de Montanha Russa tem a função exclusivamente de, dados os parâmetro
 
 A classe consiste nos métodos:
 
-- inicializar()     : Cria os carros e passageiros
-- abrir_fila()      : Função de Thread que insere passageiros na fila global.
-- iniciar_carros()  : Thread que inicia os carros e suas Threads
-- comecar()         : Inicia todas as Threads de Carros e Passageiros
+- criar_passageiros() : Cria os passageiros em seus devidos tempos
+- ligar_carros()      : Cria e inicializa as instâncias de carros
+- verificar_termino() : Espera ocupada para finalizar o programa
+- comecar()         : Inicializa variáveis e chama os métodos de criação de carros e passageiros
 
 ##### Classe Passageiro
 
@@ -201,27 +211,47 @@ Seus métodos são:
 
 ##### Classe Carro
 
-A classe Carro é responsável por verificar constantemente a fila (espera ocupada) no aguardo por passageiros até que o embarque de C (sua capacidade) passageiros seja realizado. Então, realiza seu passeio dormindo por Tm segundos, de maneira concorrente, enquanto o próximo carro, quando houver, começa a aguardar mais passageiros. Ao término do passeio, a instância faz com que cada passageiro em sua lista de passageiros embarcados seja desembarcado, e então é liberado para mais passageiros entrarem.
-
-Para permitir a interrupção da execução, seja no processo de execução ou após todos os passageiros da fila já terem andado e nenhum restar, foi necessária a utilização de uma variável booleana global *EXECUTANDO*, de forma a interromper a execução da Thread que, para cada carro, constantemente verifica novos passageiros na fila. Tal verificação é dada com um laço infinito (de condição igual à variável global mencionada), devido a impossibilidade, no Python, de forçar a "morte" de uma Thread. Tal mecanismo de segurança existe para evitar a possibilidade de deixar um recurso crítico aberto ou bloqueado.
+A classe Carro é responsável por verificar constantemente (espera ocupada) se a quantidade de passageiros embarcados é igual à sua capacidade. Então, realiza seu passeio dormindo por Tm segundos, de maneira concorrente, sinalizando para que o próximo carro, quando houver, comece a aguardar mais passageiros. Ao término do passeio, a instância faz com que cada passageiro em sua lista de passageiros embarcados seja desembarcado, e então é liberado para mais passageiros entrarem caso não haja outro carro vazio à frente.
 
 Os métodos desta classe são:
 
 - aguardar_passageiros()  : Espera ocupada até embarcar todos os C passageiros
 - iniciar_passeio()       : Inicia o passeio da instância de Thread do Carro
-    Suspende a Thread do carro por Tm segundos (passeio) e, em seguida, desembarca todos os seus passageiros
+- parar()                 : Para o carro para os passageiros desembarcarem
+- iniciar()               : Inicia o laço pseudo-infinito de funcionamento do carro - aguardar, passeio, parar
 
 <hr>
 
 #### Resultados
 
-A execução da instância do problema ocorreu sem problemas (*deadlocks* ou *starvations*) para qualquer um dos casos. A única característica que pode ser considerada indesejada é a de que, dado o início do passeio (suspensão de um carro através do método time.sleep()), a execução do programa só conseguirá ser interrompida após a finalização deste passeio. A seguir mostramos alguns *logs* para cada caso requisitado na [formulação do problema](#formulação-do-problema).
+A execução da instância do problema ocorreu sem problemas (*deadlocks* ou *starvations*) para qualquer um dos casos. Os resultados foram interessantes, mostrando que o aumento de número de carros (m) diminui impactantemente o tempo de aguardo de passageiros na fila.
 
 ##### Caso carro único
 
-Parâmetros de entrada:
 ```
-n = 52 , m = 1, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg
+Relatório do experimento 4
+Data de execução: Wed Jul 14 16:46:52 2021
+Duração do experimento: 261.34 s
+Parâmetros:
+	n: 52
+	m: 1
+	C: 4
+	Te: 1
+	Tm: 10
+	Tp: [1, 3]
+
+~~~~~~~~~ X ~~~~~~~~~ X ~~~~~~~~~
+
+Carro 0:
+	Tempo parado: 131.344
+	Tempo em movimento: 130
+	Tempo total: 261.344
+	Percentual de utilização: 0.497
+
+Passageiros:
+Tempo mínimo de espera na fila: 0.506
+Tempo máximo de espera na fila: 142.862
+Tempo médio de espera na fila: 71.292
 ```
 
 <div style="display: flex;">
@@ -235,9 +265,36 @@ n = 52 , m = 1, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg
 
 ##### Caso 2 carros
 
-Parâmetros de entrada:
 ```
-n = 92 , m = 2, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg
+Relatório do experimento 5
+Data de execução: Wed Jul 14 16:52:08 2021
+Duração do experimento: 242.33 s
+Parâmetros:
+	n: 92
+	m: 2
+	C: 4
+	Te: 1
+	Tm: 10
+	Tp: [1, 3]
+
+~~~~~~~~~ X ~~~~~~~~~ X ~~~~~~~~~
+
+Carro 0:
+	Tempo parado: 122.328
+	Tempo em movimento: 120
+	Tempo total: 242.328
+	Percentual de utilização: 0.495
+
+Carro 1:
+	Tempo parado: 132.32
+	Tempo em movimento: 110
+	Tempo total: 242.32
+	Percentual de utilização: 0.454
+
+Passageiros:
+Tempo mínimo de espera na fila: 0.505
+Tempo máximo de espera na fila: 39.712
+Tempo médio de espera na fila: 18.375
 ```
 
 <div style="display: flex;">
@@ -251,9 +308,42 @@ n = 92 , m = 2, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg
 
 ##### Caso 3 carros
 
-Parâmetros de entrada:
 ```
-n = 148 , m = 3, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg
+Relatório do experimento 6
+Data de execução: Wed Jul 14 16:56:48 2021
+Duração do experimento: 309.34 s
+Parâmetros:
+	n: 148
+	m: 3
+	C: 4
+	Te: 1
+	Tm: 10
+	Tp: [1, 3]
+
+~~~~~~~~~ X ~~~~~~~~~ X ~~~~~~~~~
+
+Carro 0:
+	Tempo parado: 179.342
+	Tempo em movimento: 130
+	Tempo total: 309.342
+	Percentual de utilização: 0.42
+
+Carro 1:
+	Tempo parado: 189.334
+	Tempo em movimento: 120
+	Tempo total: 309.334
+	Percentual de utilização: 0.388
+
+Carro 2:
+	Tempo parado: 189.323
+	Tempo em movimento: 120
+	Tempo total: 309.323
+	Percentual de utilização: 0.388
+
+Passageiros:
+Tempo mínimo de espera na fila: 0.504
+Tempo máximo de espera na fila: 1.834
+Tempo médio de espera na fila: 0.634
 ```
 
 <div style="display: flex;">

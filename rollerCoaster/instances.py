@@ -190,6 +190,7 @@ class Carro:
         desembarques += self.C
 
     def iniciar(self):
+        """Inicia o laço pseudo-infinito de funcionamento do carro - aguardar, passeio, parar"""
         global EXECUTANDO
 
         self.tempo_inicial = time.time()
@@ -264,11 +265,7 @@ class MontanhaRussa:
             thread_carro.start()
 
     def verificar_termino(self):
-        """Espera ocupada para finalizar o programa
-
-        Aguarda até todos os passageiros terem sido criados, então
-        aguarda até que a fila esteja vazia e, por fim, aguarda
-        """
+        """Espera ocupada para finalizar o programa"""
         global desembarques
         global tempos_espera_passageiros
         global carros
@@ -291,7 +288,7 @@ class MontanhaRussa:
         finalizar(None, None)
 
     def comecar(self):
-        """Cria os carros e passageiros"""
+        """Inicializa variáveis e chama os métodos de criação de carros e passageiros"""
         global NUM_CARROS
 
         NUM_CARROS = self.m
