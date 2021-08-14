@@ -1,0 +1,29 @@
+Relatório do experimento 8
+Data de execução: Mon Jul 19 08:30:10 2021
+Duração do experimento: 239.73 s
+Parâmetros:
+	n: 92
+	m: 2
+	C: 4
+	Te: 1
+	Tm: 10
+	Tp: [1, 3]
+
+~~~~~~~~~ X ~~~~~~~~~ X ~~~~~~~~~
+
+Carro 0:
+	Tempo parado: 119.725
+	Tempo em movimento: 120
+	Tempo total: 239.725
+	Percentual de utilização: 0.501
+
+Carro 1:
+	Tempo parado: 129.717
+	Tempo em movimento: 110
+	Tempo total: 239.717
+	Percentual de utilização: 0.459
+
+Passageiros:
+Tempo mínimo de espera na fila: 0.511
+Tempo máximo de espera na fila: 41.586
+Tempo médio de espera na fila: 18.887

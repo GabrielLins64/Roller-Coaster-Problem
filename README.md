@@ -1,8 +1,8 @@
 <!-- For rendering markdown LaTeX into pdf -->
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <script type="text/x-mathjax-config">
 		MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });
-</script>
+</script> -->
 
 <center>
 	<img src="assets/uslogo.png">
@@ -46,7 +46,7 @@
 
 ### Descrição
 
-Trabalho acadêmico da disciplina de Programação Concorrente e Paralela. Consiste na implementação, em *Python*, da resolução do problema de concorrência *Roller Coaster*.
+Trabalho acadêmico da disciplina de Programação Concorrente e Paralela. Consiste na implementação, em _Python_, da resolução do problema de concorrência _Roller Coaster_.
 
 <hr>
 
@@ -61,14 +61,13 @@ sudo pip install --upgrade pip
 sudo pip install virtualenv
 ```
 
-
 **2.** Clone este repositório com:
 
 ```
 git clone git@github.com:GabrielLins64/Roller-Coaster-Problem.git
 ```
 
-**3.** Navegue ao diretório raiz do projeto e crie um ambiente virtual *Python* para instalar as dependências do projeto:
+**3.** Navegue ao diretório raiz do projeto e crie um ambiente virtual _Python_ para instalar as dependências do projeto:
 
 ```
 $ cd Roller-Coaster-Problem
@@ -93,7 +92,7 @@ $ pip install --upgrade pip
 $ pip install -r requirements.txt
 ```
 
-*Quando quiser desativar o ambiente virtual use:
+\*Quando quiser desativar o ambiente virtual use:
 
 ```
 $ deactivate
@@ -123,7 +122,7 @@ Para resolvê-lo deve-se usar princípios básico de programação concorrente.
 
 O problema da Montanha Russa usa apenas três processos: a montanha russa, o processo main(), os passageiros e o(s) carro(s). Para facilitar o entendimento, sugiro usar para nomes das classes: MontanhaRussa(), Passageiro() e Carro().
 
-O sistema não possui um "controlador" (ou a pessoa que controla a movimentação da montanha russa), isto é,  a função MontanhaRussa() apenas cria os carros e os passageiros. Depois disso, os Passageiro() e Carro() se autocontrolarão sozinhos, isto é, os passageiros saberão a hora de esperar na fila, entrar no carro, sair do carro e o carro saberá quando sair, conforme as condições foram atendidas.
+O sistema não possui um "controlador" (ou a pessoa que controla a movimentação da montanha russa), isto é, a função MontanhaRussa() apenas cria os carros e os passageiros. Depois disso, os Passageiro() e Carro() se autocontrolarão sozinhos, isto é, os passageiros saberão a hora de esperar na fila, entrar no carro, sair do carro e o carro saberá quando sair, conforme as condições foram atendidas.
 
 Desenvolver um algoritmo concorrente e códigos para a montanha russa, o carro e os passageiros. Desenvolver uma solução para sincronizá-los usando exclusão mútua com espera bloqueada. Pense em escrever o código genérico, prevendo os demais casos....
 
@@ -149,15 +148,15 @@ Considere n = 92 , m = 2, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg.
 
 Esse é o ultimo caso, três carros simultâneos.
 
-Considere n = 148, m = 3, C = 4,  Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg.
+Considere n = 148, m = 3, C = 4, Te = 1 seg, Tm = 10 seg, Tp = 1 a 3 seg.
 
 #### Descrição dos algoritmos
 
 O início do algoritmo consiste na Classe Montanha Russa gerando a quantidade definida de Carros e Passageiros como Threads, cada. A partir daí, ambas as classes (Carros e Passageiros) passam a se autogerenciar, respeitando a ordem de saída dos carros e a ordem da fila, bem como sabendo em que momento um Passageiro deverá embarcar ou desembarcar de um Carro.
 
-A abordagem utilizada para o devido funcionamento do modelo foi a de manter duas esperas ocupadas em cada Passageiro, uma para verificar sua posição na fila e só entrar no Carro quando possível, e uma para verificar se o mesmo está parado e vazio. Já para a classe Carro, existe apenas uma espera ocupada, na qual este constantemente verifica se já possui a capacidade máxima de passageiros e, quando possuir, inicia o passeio e sinaliza, utilizando flags globais - *mutexes* (memória compartilhada), representando qual o carro que os próximos passageiros deverão entrar, evitando, assim, condições de corrida e a quebra de ordem.
+A abordagem utilizada para o devido funcionamento do modelo foi a de manter duas esperas ocupadas em cada Passageiro, uma para verificar sua posição na fila e só entrar no Carro quando possível, e uma para verificar se o mesmo está parado e vazio. Já para a classe Carro, existe apenas uma espera ocupada, na qual este constantemente verifica se já possui a capacidade máxima de passageiros e, quando possuir, inicia o passeio e sinaliza, utilizando flags globais - _mutexes_ (memória compartilhada), representando qual o carro que os próximos passageiros deverão entrar, evitando, assim, condições de corrida e a quebra de ordem.
 
-Como a linguagem *Python* não permite que se "mate" Threads, foi necessária a utilização de um gerenciador (que não foi instanciado como Thread) para constantemente verificar o término do programa e, quando atingido, limpar a memória e gerar os relatórios da execução.
+Como a linguagem _Python_ não permite que se "mate" Threads, foi necessária a utilização de um gerenciador (que não foi instanciado como Thread) para constantemente verificar o término do programa e, quando atingido, limpar a memória e gerar os relatórios da execução.
 
 Visualizando em pseudo-código, podemos ter a seguinte representação deste modelo:
 
@@ -185,8 +184,7 @@ função montanha_russa (parâmetros) {
 
 #### Descrição da implementação
 
-O código consiste em 3 classes principais: [MontanhaRussa](#classe-montanha-russa), [Passageiro](#classe-passageiro) e [Carro](#classe-carro). Para a devida comunicação entre as Threads, são utilizadas variáveis de acesso global, isto é, recursos compartilhados para funcionar como *mutexes* e controle de ordem. Como mecanismo de exclusão mútua em cada Thread, além dos *mutexes*, é utilizada a espera bloqueada. Os detalhes de implementação de cada fluxo de funcionamento são descritos abaixo para cada classe.
-
+O código consiste em 3 classes principais: [MontanhaRussa](#classe-montanha-russa), [Passageiro](#classe-passageiro) e [Carro](#classe-carro). Para a devida comunicação entre as Threads, são utilizadas variáveis de acesso global, isto é, recursos compartilhados para funcionar como _mutexes_ e controle de ordem. Como mecanismo de exclusão mútua em cada Thread, além dos _mutexes_, é utilizada a espera bloqueada. Os detalhes de implementação de cada fluxo de funcionamento são descritos abaixo para cada classe.
 
 ##### Classe Montanha Russa
 
@@ -195,18 +193,18 @@ A classe de Montanha Russa tem a função exclusivamente de, dados os parâmetro
 A classe consiste nos métodos:
 
 - criar_passageiros() : Cria os passageiros em seus devidos tempos
-- ligar_carros()      : Cria e inicializa as instâncias de carros
+- ligar_carros() : Cria e inicializa as instâncias de carros
 - verificar_termino() : Espera ocupada para finalizar o programa
-- comecar()         : Inicializa variáveis e chama os métodos de criação de carros e passageiros
+- comecar() : Inicializa variáveis e chama os métodos de criação de carros e passageiros
 
 ##### Classe Passageiro
 
-A classe Passageiro é responsável por colocar sua instância na fila global, no tempo de chegada deste passageiro (escolhido aleatoriamente dentre os possíveis valores de Tp), bem como por gerenciar seu embarque, consequentemente removendo-o da fila, e desembarque. Cada passageiro é identificado por um número de *ticket* único, gerado em sua inicialização pela Montanha Russa.
+A classe Passageiro é responsável por colocar sua instância na fila global, no tempo de chegada deste passageiro (escolhido aleatoriamente dentre os possíveis valores de Tp), bem como por gerenciar seu embarque, consequentemente removendo-o da fila, e desembarque. Cada passageiro é identificado por um número de _ticket_ único, gerado em sua inicialização pela Montanha Russa.
 
 Seus métodos são:
 
-- chegar()      : Coloca o passageiro na fila
-- embarcar()    : Embarca o passageiro em um carro
+- chegar() : Coloca o passageiro na fila
+- embarcar() : Embarca o passageiro em um carro
 - desembarcar() : Desembarca o passageiro de um carro
 
 ##### Classe Carro
@@ -215,16 +213,16 @@ A classe Carro é responsável por verificar constantemente (espera ocupada) se 
 
 Os métodos desta classe são:
 
-- aguardar_passageiros()  : Espera ocupada até embarcar todos os C passageiros
-- iniciar_passeio()       : Inicia o passeio da instância de Thread do Carro
-- parar()                 : Para o carro para os passageiros desembarcarem
-- iniciar()               : Inicia o laço pseudo-infinito de funcionamento do carro - aguardar, passeio, parar
+- aguardar_passageiros() : Espera ocupada até embarcar todos os C passageiros
+- iniciar_passeio() : Inicia o passeio da instância de Thread do Carro
+- parar() : Para o carro para os passageiros desembarcarem
+- iniciar() : Inicia o laço pseudo-infinito de funcionamento do carro - aguardar, passeio, parar
 
 <hr>
 
 #### Resultados
 
-A execução da instância do problema ocorreu sem problemas (*deadlocks* ou *starvations*) para qualquer um dos casos. Os resultados foram interessantes, mostrando que o aumento de número de carros (m) diminui impactantemente o tempo de aguardo de passageiros na fila.
+A execução da instância do problema ocorreu sem problemas (_deadlocks_ ou _starvations_) para qualquer um dos casos. Os resultados foram interessantes, mostrando que o aumento de número de carros (m) diminui impactantemente o tempo de aguardo de passageiros na fila.
 
 ##### Caso carro único
 
@@ -359,6 +357,6 @@ Tempo médio de espera na fila: 0.634
 
 ### Referências
 
-[1] **Elliot Forbes**. *Learning Concurrency in Python*. Packt Publishing: 2017.
+[1] **Elliot Forbes**. _Learning Concurrency in Python_. Packt Publishing: 2017.
 
 [2] FERNÁNDEZ, Marcial. Problema da Montanha Russa. **Marcial Fernández**, 2021. Disponível em: <http://marcial.larces.uece.br/cursos/programacao-concorrente-e-paralela-2020-2/problema-da-montanha-russa>. Acesso em 12 de julho de 2021.
